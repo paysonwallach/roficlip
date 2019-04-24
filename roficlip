@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 die() {
     echo "$*" 1>&2
@@ -10,41 +10,6 @@ clipster -o > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     die 'Failed to retrieve history from Clipster, please ensure daemon is running!'
 fi
-
-# Parse arguments
-if ! OPTIONS=$(getopt -n $PROGRAM_NAME -o p::w::l::f:: \
-               -l padding::,width::,location::,font:: -- "$@"); then
-    die "Error parsing arguments. Try $PROGRAM_NAME --help"
-fi
-
-while [ $# -gt 0 ]; do
-    case "$1" in
-        -p|-padding)
-            PADDING="-padding $2"; shift 2
-            ;;
-        -w|-width)
-            WIDTH="-width $2"; shift 2
-            ;;
-        -l|-location)
-            LOCATION="-location $2"; shift 2
-            ;;
-        -f|-font)
-            FONT="-font '$2'"; shift 2
-            ;;
-        --)
-            # no more arguments to parse
-            shift
-            break
-            ;;
-        -*)
-            printf "Unknown option %s\n" "$1"
-            exit 1
-            ;;
-        (*)
-            break
-            ;;
-    esac
-done
 
 # Extract clipboard history from clipster and format for rofi
 #  - Remove Newlines from clips
@@ -64,7 +29,7 @@ C_HIST="$(clipster -c -o -n 500 -0 \
 if [[ -t 0 ]]; then
     SELECTION="$(echo "$C_HIST" | fzf-tmux -d 15 --prompt='selection: ')"
 else
-    SELECTION="$(echo "$C_HIST" | eval "rofi -dmenu -i -lines 20  $PADDING $WIDTH $LOCATION $FONT -p 'item'")"
+    SELECTION="$(echo "$C_HIST" | eval "rofi -dmenu -i -lines 20  $@ -p 'item'")"
 fi
 
 # Verify user made a selection
